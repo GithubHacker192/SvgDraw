@@ -2,58 +2,6 @@ let svgCanvas = document.getElementById('canvas');
 let svgCodeArea = document.getElementById('svg-code');
 let copyButton = document.getElementById('copy-button');
 let straightLineMode = document.getElementById('straight-line-mode');
-
-let drawing = false;
-let startX, startY;
-let currentElement = null;
-
-svgCanvas.addEventListener('mousedown', (e) => {
-    drawing = true;
-    startX = e.offsetX;
-    startY = e.offsetY;
-
-    currentElement = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    currentElement.setAttribute('x1', startX);
-    currentElement.setAttribute('y1', startY);
-    currentElement.setAttribute('x2', startX);
-    currentElement.setAttribute('y2', startY);
-    currentElement.setAttribute('stroke', 'black');
-    svgCanvas.appendChild(currentElement);
-});
-
-svgCanvas.addEventListener('mousemove', (e) => {
-    if (!drawing) return;
-
-    let endX = e.offsetX;
-    let endY = e.offsetY;
-
-    if (straightLineMode.checked) {
-        // Calculate the angle and snap it to the nearest 45 degrees
-        [endX, endY] = snapTo45Degrees(startX, startY, endX, endY);
-    }
-
-    currentElement.setAttribute('x2', endX);
-    currentElement.setAttribute('y2', endY);
-    updateSVGCode();
-});
-
-svgCanvas.addEventListener('mouseup', () => {
-    drawing = false;
-    currentElement = null;
-});
-
-function updateSVGCode() {
-    let svgData = svgCanvas.outerHTML;
-    svgCodeArea.value = svgData;
-}
-
-copyButton.addEventListener('click', () => {
-    svgCodeArea.select();
-    document.execCommand('copy');
-    alert('SVG code coplet svgCanvas = document.getElementById('canvas');
-let svgCodeArea = document.getElementById('svg-code');
-let copyButton = document.getElementById('copy-button');
-let straightLineMode = document.getElementById('straight-line-mode');
 let shapeButtons = document.querySelectorAll('.shape-btn');
 
 let drawing = false;
@@ -70,10 +18,30 @@ shapeButtons.forEach(button => {
     });
 });
 
-svgCanvas.addEventListener('mousedown', (e) => {
+// Mouse events for desktops
+svgCanvas.addEventListener('mousedown', (e) => startDrawing(e.offsetX, e.offsetY));
+svgCanvas.addEventListener('mousemove', (e) => draw(e.offsetX, e.offsetY));
+svgCanvas.addEventListener('mouseup', stopDrawing);
+
+// Touch events for mobile
+svgCanvas.addEventListener('touchstart', (e) => {
+    let touch = e.touches[0];
+    let rect = svgCanvas.getBoundingClientRect();
+    startDrawing(touch.clientX - rect.left, touch.clientY - rect.top);
+});
+svgCanvas.addEventListener('touchmove', (e) => {
+    e.preventDefault(); // Prevent scrolling while drawing
+    let touch = e.touches[0];
+    let rect = svgCanvas.getBoundingClientRect();
+    draw(touch.clientX - rect.left, touch.clientY - rect.top);
+});
+svgCanvas.addEventListener('touchend', stopDrawing);
+
+// Start drawing (works for both mouse and touch)
+function startDrawing(x, y) {
     drawing = true;
-    startX = e.offsetX;
-    startY = e.offsetY;
+    startX = x;
+    startY = y;
 
     if (currentShape === 'line') {
         currentElement = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -100,45 +68,46 @@ svgCanvas.addEventListener('mousedown', (e) => {
     }
 
     svgCanvas.appendChild(currentElement);
-});
+}
 
-svgCanvas.addEventListener('mousemove', (e) => {
+// Drawing (works for both mouse and touch)
+function draw(x, y) {
     if (!drawing) return;
-
-    let endX = e.offsetX;
-    let endY = e.offsetY;
 
     if (currentShape === 'line') {
         if (straightLineMode.checked) {
-            [endX, endY] = snapTo45Degrees(startX, startY, endX, endY);
+            [x, y] = snapTo45Degrees(startX, startY, x, y);
         }
-        currentElement.setAttribute('x2', endX);
-        currentElement.setAttribute('y2', endY);
+        currentElement.setAttribute('x2', x);
+        currentElement.setAttribute('y2', y);
     } else if (currentShape === 'rectangle') {
-        let width = endX - startX;
-        let height = endY - startY;
+        let width = x - startX;
+        let height = y - startY;
         currentElement.setAttribute('width', Math.abs(width));
         currentElement.setAttribute('height', Math.abs(height));
-        if (width < 0) currentElement.setAttribute('x', endX);
-        if (height < 0) currentElement.setAttribute('y', endY);
+        if (width < 0) currentElement.setAttribute('x', x);
+        if (height < 0) currentElement.setAttribute('y', y);
     } else if (currentShape === 'circle') {
-        let radius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+        let radius = Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2));
         currentElement.setAttribute('r', radius);
     }
 
     updateSVGCode();
-});
+}
 
-svgCanvas.addEventListener('mouseup', () => {
+// Stop drawing (works for both mouse and touch)
+function stopDrawing() {
     drawing = false;
     currentElement = null;
-});
+}
 
+// Update the SVG code
 function updateSVGCode() {
     let svgData = svgCanvas.outerHTML;
     svgCodeArea.value = svgData;
 }
 
+// Copy SVG code to clipboard
 copyButton.addEventListener('click', () => {
     svgCodeArea.select();
     document.execCommand('copy');
@@ -150,12 +119,4 @@ function snapTo45Degrees(x1, y1, x2, y2) {
     let dx = x2 - x1;
     let dy = y2 - y1;
     let angle = Math.atan2(dy, dx);  // Calculate the angle in radians
-    let snappedAngle = Math.round(angle / (Math.PI / 4)) * (Math.PI / 4);  // Snap to nearest 45 degrees
-    let distance = Math.sqrt(dx * dx + dy * dy);  // Get the distance between points
-
-    // Calculate the new x2, y2 based on the snapped angle and distance
-    let snappedX = x1 + Math.cos(snappedAngle) * distance;
-    let snappedY = y1 + Math.sin(snappedAngle) * distance;
-
-    return [snappedX, snappedY];
-}
+    let snappedAngle = Math.round(angle / (
