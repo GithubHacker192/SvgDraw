@@ -169,6 +169,49 @@ function getSnapPoint(x, y) {
             let y2 = parseFloat(element.getAttribute('y2'));
 
             // Check if the current point is close to the endpoints
-            if (isPointCloseToPoint(x, y, x1, y1, snapThreshold) || isPointCloseToPoint(x, y, x2, y2, snapThreshold)) {
+            if (isPointCloseToPoint(x, y, x1, y1, snapThreshold)) {
                 return [x1, y1]; // Snap to the first endpoint
             }
+            if (isPointCloseToPoint(x, y, x2, y2, snapThreshold)) {
+                return [x2, y2]; // Snap to the second endpoint
+            }
+        } else if (element.tagName === 'rect') {
+            let x1 = parseFloat(element.getAttribute('x'));
+            let y1 = parseFloat(element.getAttribute('y'));
+            let width = parseFloat(element.getAttribute('width'));
+            let height = parseFloat(element.getAttribute('height'));
+
+            // Check corners of the rectangle
+            let corners = [
+                [x1, y1],
+                [x1 + width, y1],
+                [x1, y1 + height],
+                [x1 + width, y1 + height]
+            ];
+
+            for (let corner of corners) {
+                if (isPointCloseToPoint(x, y, corner[0], corner[1], snapThreshold)) {
+                    return corner; // Snap to corner
+                }
+            }
+        } else if (element.tagName === 'circle') {
+            let cx = parseFloat(element.getAttribute('cx'));
+            let cy = parseFloat(element.getAttribute('cy'));
+            let r = parseFloat(element.getAttribute('r'));
+
+            // Check if the point is close to the edge of the circle
+            if (isPointCloseToPoint(x, y, cx + r, cy, snapThreshold) ||
+                isPointCloseToPoint(x, y, cx - r, cy, snapThreshold) ||
+                isPointCloseToPoint(x, y, cx, cy + r, snapThreshold) ||
+                isPointCloseToPoint(x, y, cx, cy - r, snapThreshold)) {
+                return [cx + r, cy]; // Snap to the edge of the circle
+            }
+        }
+    }
+    return null; // No snap point found
+}
+
+// Function to check if a point is close to another point
+function isPointCloseToPoint(px, py, qx, qy, threshold) {
+    return Math.abs(px - qx) < threshold && Math.abs(py - qy) < threshold;
+}
