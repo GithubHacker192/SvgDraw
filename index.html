@@ -4,18 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SVG Drawing Tool</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <h1>SVG Drawing Tool</h1>
     <div>
         <svg id="canvas" xmlns="http://www.w3.org/2000/svg" width="500" height="500">
             <!-- User drawings go here -->
         </svg>
     </div>
+    
+    <!-- Toggle for straight line mode -->
+    <label>
+        <input type="checkbox" id="straight-line-mode">
+        Straight Line Mode (Snap to 45°)
+    </label>
+    
     <textarea id="svg-code" readonly></textarea><br/>
     <button id="copy-button">Copy SVG Code</button>
 
-    <script src="assets/js/script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
