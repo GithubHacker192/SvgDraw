@@ -1,11 +1,9 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>SVG Drawing Tool</title>
-    <!-- Correct path to the external CSS file in the assets/css folder -->
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -27,7 +25,7 @@
 
     <!-- Drawing Area -->
     <div>
-        <svg id="canvas" xmlns="http://www.w3.org/2000/svg" width="500" height="500">
+        <svg id="canvas" xmlns="http://www.w3.org/2000/svg" width="100%" height="500">
             <!-- User drawings go here -->
         </svg>
     </div>
@@ -36,7 +34,6 @@
     <textarea id="svg-code" readonly></textarea><br/>
     <button id="copy-button">Copy SVG Code</button>
 
-    <!-- Correct path to the external JS file in the assets/js folder -->
     <script src="assets/js/script.js"></script>
 </body>
 </html>
