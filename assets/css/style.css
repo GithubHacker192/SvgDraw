@@ -1,0 +1,25 @@
+/* style.css */
+#canvas {
+    border: 1px solid black;
+    width: 500px;
+    height: 500px;
+}
+
+#svg-code {
+    width: 500px;
+    height: 200px;
+    margin-top: 10px;
+}
+
+button {
+    padding: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
