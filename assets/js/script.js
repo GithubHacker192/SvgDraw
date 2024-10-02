@@ -93,6 +93,14 @@ function startDrawing(x, y) {
 function draw(x, y) {
     if (!drawing) return;
 
+    // Snap to existing points if snap checkbox is checked
+    if (snapToPoints.checked) {
+        let snapPoint = getSnapPoint(x, y);
+        if (snapPoint) {
+            [x, y] = snapPoint;  // Update the coordinates to the snapped point
+        }
+    }
+
     if (currentShape === 'line') {
         if (straightLineMode.checked) {
             [x, y] = snapTo45Degrees(startX, startY, x, y);
@@ -111,7 +119,7 @@ function draw(x, y) {
         currentElement.setAttribute('r', radius);
     }
 
-    updateSVGCode();
+    updateSVGCode();  // Update the SVG code after adjusting the shape
 }
 
 // Stop drawing (works for both mouse and touch)
