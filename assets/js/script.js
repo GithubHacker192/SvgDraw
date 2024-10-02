@@ -1,13 +1,16 @@
 let svgCanvas = document.getElementById('canvas');
 let svgCodeArea = document.getElementById('svg-code');
 let copyButton = document.getElementById('copy-button');
+let deleteButton = document.getElementById('delete-button');
 let straightLineMode = document.getElementById('straight-line-mode');
+let snapToPoints = document.getElementById('snap-to-points');
 let shapeButtons = document.querySelectorAll('.shape-btn');
 
 let drawing = false;
 let startX, startY;
 let currentElement = null;
 let currentShape = 'line';  // Default shape is line
+let drawnElements = []; // Array to keep track of drawn elements
 
 // Handle shape selection
 shapeButtons.forEach(button => {
@@ -47,6 +50,14 @@ svgCanvas.addEventListener('touchend', stopDrawing);
 
 // Start drawing (works for both mouse and touch)
 function startDrawing(x, y) {
+    // Snap to existing points if near them and checkbox is checked
+    if (snapToPoints.checked) {
+        let snapPoint = getSnapPoint(x, y);
+        if (snapPoint) {
+            [x, y] = snapPoint;
+        }
+    }
+
     startX = x;
     startY = y;
 
@@ -75,6 +86,7 @@ function startDrawing(x, y) {
     }
 
     svgCanvas.appendChild(currentElement);
+    drawnElements.push(currentElement); // Add current element to the array
 }
 
 // Drawing (works for both mouse and touch)
@@ -108,6 +120,15 @@ function stopDrawing() {
     currentElement = null;
 }
 
+// Function to delete the last drawn shape
+deleteButton.addEventListener('click', () => {
+    if (drawnElements.length > 0) {
+        // Remove the last element from the SVG
+        svgCanvas.removeChild(drawnElements.pop());
+        updateSVGCode();
+    }
+});
+
 // Update the SVG code
 function updateSVGCode() {
     let svgData = svgCanvas.outerHTML;
@@ -135,3 +156,19 @@ function snapTo45Degrees(x1, y1, x2, y2) {
 
     return [snappedX, snappedY];
 }
+
+// Function to get a snapping point if close to existing endpoints
+function getSnapPoint(x, y) {
+    const snapThreshold = 10; // Snap threshold in pixels
+
+    for (let element of drawnElements) {
+        if (element.tagName === 'line') {
+            let x1 = parseFloat(element.getAttribute('x1'));
+            let y1 = parseFloat(element.getAttribute('y1'));
+            let x2 = parseFloat(element.getAttribute('x2'));
+            let y2 = parseFloat(element.getAttribute('y2'));
+
+            // Check if the current point is close to the endpoints
+            if (isPointCloseToPoint(x, y, x1, y1, snapThreshold) || isPointCloseToPoint(x, y, x2, y2, snapThreshold)) {
+                return [x1, y1]; // Snap to the first endpoint
+            }
