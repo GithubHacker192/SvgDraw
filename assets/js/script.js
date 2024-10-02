@@ -19,27 +19,34 @@ shapeButtons.forEach(button => {
 });
 
 // Mouse events for desktops
-svgCanvas.addEventListener('mousedown', (e) => startDrawing(e.offsetX, e.offsetY));
-svgCanvas.addEventListener('mousemove', (e) => draw(e.offsetX, e.offsetY));
-svgCanvas.addEventListener('mouseup', stopDrawing);
+svgCanvas.addEventListener('mousedown', (e) => {
+    startDrawing(e.offsetX, e.offsetY);
+    drawing = true; // Start drawing immediately on mousedown
+});
+svgCanvas.addEventListener('mousemove', (e) => {
+    if (drawing) draw(e.offsetX, e.offsetY); // Keep drawing while mouse is moving
+});
+svgCanvas.addEventListener('mouseup', () => stopDrawing());
 
 // Touch events for mobile
 svgCanvas.addEventListener('touchstart', (e) => {
     let touch = e.touches[0];
     let rect = svgCanvas.getBoundingClientRect();
     startDrawing(touch.clientX - rect.left, touch.clientY - rect.top);
+    drawing = true; // Start drawing immediately on touchstart
 });
 svgCanvas.addEventListener('touchmove', (e) => {
     e.preventDefault(); // Prevent scrolling while drawing
-    let touch = e.touches[0];
-    let rect = svgCanvas.getBoundingClientRect();
-    draw(touch.clientX - rect.left, touch.clientY - rect.top);
+    if (drawing) {
+        let touch = e.touches[0];
+        let rect = svgCanvas.getBoundingClientRect();
+        draw(touch.clientX - rect.left, touch.clientY - rect.top);
+    }
 });
 svgCanvas.addEventListener('touchend', stopDrawing);
 
 // Start drawing (works for both mouse and touch)
 function startDrawing(x, y) {
-    drawing = true;
     startX = x;
     startY = y;
 
@@ -119,4 +126,12 @@ function snapTo45Degrees(x1, y1, x2, y2) {
     let dx = x2 - x1;
     let dy = y2 - y1;
     let angle = Math.atan2(dy, dx);  // Calculate the angle in radians
-    let snappedAngle = Math.round(angle / (
+    let snappedAngle = Math.round(angle / (Math.PI / 4)) * (Math.PI / 4);  // Snap to nearest 45 degrees
+    let distance = Math.sqrt(dx * dx + dy * dy);  // Get the distance between points
+
+    // Calculate the new x2, y2 based on the snapped angle and distance
+    let snappedX = x1 + Math.cos(snappedAngle) * distance;
+    let snappedY = y1 + Math.sin(snappedAngle) * distance;
+
+    return [snappedX, snappedY];
+}
